@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useFormContext } from '../context/FormContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Download, RefreshCw, ExternalLink, Filter } from 'lucide-react';
+import { Loader2, Download, RefreshCw, ExternalLink, Filter, AlertTriangle } from 'lucide-react';
 import { generatePDF } from '../utils/apiService';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Results: React.FC = () => {
   const { results, resetForm, formData } = useFormContext();
@@ -25,7 +25,7 @@ const Results: React.FC = () => {
     );
   }
   
-  if (results.error) {
+  if (results.error && !results.schemes.length) {
     return (
       <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
         <div className="mb-4 text-destructive">
@@ -70,6 +70,15 @@ const Results: React.FC = () => {
           Based on your information, we found {results.schemes.length} schemes you may be eligible for.
         </p>
       </div>
+      
+      {results.usedFallback && results.error && (
+        <Alert className="mb-6 bg-amber-50 border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            {results.error}
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
         <div className="w-full md:w-auto space-y-2">

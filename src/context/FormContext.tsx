@@ -14,6 +14,7 @@ export type Results = {
   schemes: Scheme[];
   loading: boolean;
   error: string | null;
+  usedFallback: boolean;
 };
 
 export type Scheme = {
@@ -50,6 +51,7 @@ const defaultResults: Results = {
   schemes: [],
   loading: false,
   error: null,
+  usedFallback: false,
 };
 
 // Default Claude API key
@@ -94,7 +96,7 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const fetchResults = async () => {
     try {
       setIsSubmitting(true);
-      setResults(prev => ({ ...prev, loading: true, error: null }));
+      setResults(prev => ({ ...prev, loading: true, error: null, usedFallback: false }));
       
       if (!claudeApiKey) {
         throw new Error('Claude API key is required. Please add your API key in the settings.');
@@ -104,18 +106,32 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       const response: ApiResponse = await callClaudeAPI(prompt, claudeApiKey);
       
       if (response.success && response.data) {
+        const usedFallback = !!response.error;
+        
         setResults({
           schemes: response.data.schemes,
           loading: false,
-          error: response.error || null
+          error: response.error || null,
+          usedFallback
         });
         
         setCurrentStep(6); // Automatically advance to results page
-        toast({
-          title: "Success!",
-          description: "Found eligible schemes based on your information.",
-          variant: "default",
-        });
+        
+        if (usedFallback) {
+          // Show a warning toast for fallback data
+          toast({
+            title: "Notice",
+            description: response.error || "Using sample schemes. Real-time data unavailable.",
+            variant: "warning",
+          });
+        } else {
+          // Show success toast for real data
+          toast({
+            title: "Success!",
+            description: "Found eligible schemes based on your information.",
+            variant: "default",
+          });
+        }
       } else {
         throw new Error(response.error || 'Failed to fetch eligible schemes');
       }
@@ -132,7 +148,8 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
       setResults(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch eligible schemes. Please try again.'
+        error: error instanceof Error ? error.message : 'Failed to fetch eligible schemes. Please try again.',
+        usedFallback: false
       }));
     } finally {
       setIsSubmitting(false);

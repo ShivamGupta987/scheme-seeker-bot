@@ -73,18 +73,18 @@ const fallbackSchemes = [
 
 export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<ApiResponse> => {
   try {
-    // If we're running in development or the browser environment
-    // has CORS issues with direct API calls
-    if (window.location.hostname === 'localhost' || 
-        window.location.hostname.includes('lovableproject.com')) {
-      // Return fallback data if API call would likely fail due to CORS
-      console.log('Using fallback data due to potential CORS issues');
-      return {
-        success: true,
-        data: { schemes: generateDynamicFallbackSchemes(prompt) }
-      };
+    // Check if we should make a real API call or use fallback
+    // Only use fallback in development with CORS issues
+    const shouldUseFallback = window.location.hostname === 'localhost' || 
+                            window.location.hostname.includes('lovableproject.com');
+                            
+    if (shouldUseFallback) {
+      console.log('Using fallback data due to potential CORS issues in development environment');
+      console.log('In production, this would attempt to call the Claude API');
     }
     
+    // Always attempt to call the API first, regardless of environment
+    // This way, it will work in production
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -144,7 +144,9 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
     return {
       success: true, // Still returning success:true so UI shows fallback schemes
       data: { schemes: generateDynamicFallbackSchemes(prompt) },
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? 
+        `Could not fetch real schemes: ${error.message}. Showing sample schemes instead.` : 
+        'Could not fetch real schemes. Showing sample schemes instead.'
     };
   }
 };
