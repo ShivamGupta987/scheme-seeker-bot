@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { generatePrompt, callClaudeAPI } from '../utils/apiService';
 
 export type FormData = {
   state: string;
@@ -33,6 +34,8 @@ interface FormContextType {
   fetchResults: () => Promise<void>;
   isSubmitting: boolean;
   resetForm: () => void;
+  claudeApiKey: string;
+  setClaudeApiKey: (key: string) => void;
 }
 
 const defaultFormData: FormData = {
@@ -48,6 +51,14 @@ const defaultResults: Results = {
   error: null,
 };
 
+// Try to load API key from localStorage
+const getSavedApiKey = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('claudeApiKey') || '';
+  }
+  return '';
+};
+
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
@@ -55,6 +66,14 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [results, setResults] = useState<Results>(defaultResults);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [claudeApiKey, setClaudeApiKey] = useState(getSavedApiKey);
+
+  // Save API key to localStorage when it changes
+  React.useEffect(() => {
+    if (claudeApiKey) {
+      localStorage.setItem('claudeApiKey', claudeApiKey);
+    }
+  }, [claudeApiKey]);
 
   const updateFormData = (key: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -66,54 +85,33 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setCurrentStep(0);
   };
 
-  // This function would call the Claude API
+  // This function will call the Claude API
   const fetchResults = async () => {
     try {
       setIsSubmitting(true);
       setResults(prev => ({ ...prev, loading: true, error: null }));
       
-      // Simulate API call with mock data for now
-      // In a real implementation, this would call the Claude API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!claudeApiKey) {
+        throw new Error('Claude API key is required. Please add your API key in the settings.');
+      }
       
-      // Mock data
-      const mockSchemes: Scheme[] = [
-        {
-          id: '1',
-          name: 'PM Kisan Samman Nidhi',
-          description: 'Income support program that provides farmers with up to ₹6,000 per year as minimum income support.',
-          category: 'Agriculture',
-          eligibilityCriteria: ['Small and marginal farmers', 'Land ownership under 2 hectares'],
-          link: 'https://pmkisan.gov.in/'
-        },
-        {
-          id: '2',
-          name: 'Ayushman Bharat',
-          description: 'Health insurance scheme providing coverage up to ₹5 lakhs per family per year for secondary and tertiary care hospitalization.',
-          category: 'Health',
-          eligibilityCriteria: ['Income below poverty line', 'No existing health coverage'],
-          link: 'https://pmjay.gov.in/'
-        },
-        {
-          id: '3',
-          name: 'PM Awas Yojana',
-          description: 'Housing scheme aimed at providing housing for all in urban areas by 2022.',
-          category: 'Housing',
-          eligibilityCriteria: ['Urban resident', 'No existing property ownership'],
-          link: 'https://pmaymis.gov.in/'
-        }
-      ];
+      const prompt = generatePrompt(formData);
+      const response = await callClaudeAPI(prompt, claudeApiKey);
       
-      setResults({
-        schemes: mockSchemes,
-        loading: false,
-        error: null
-      });
+      if (response.success) {
+        setResults({
+          schemes: response.data.schemes,
+          loading: false,
+          error: null
+        });
+      } else {
+        throw new Error(response.error || 'Failed to fetch eligible schemes');
+      }
     } catch (error) {
       setResults(prev => ({
         ...prev,
         loading: false,
-        error: 'Failed to fetch eligible schemes. Please try again.'
+        error: error.message || 'Failed to fetch eligible schemes. Please try again.'
       }));
       console.error('Error fetching results:', error);
     } finally {
@@ -132,7 +130,9 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         setResults,
         fetchResults,
         isSubmitting,
-        resetForm
+        resetForm,
+        claudeApiKey,
+        setClaudeApiKey
       }}
     >
       {children}

@@ -1,10 +1,5 @@
 
-// This file will handle API calls to Claude
-
 import { FormData } from '../context/FormContext';
-
-// In a real implementation, you would replace this with actual API calls
-// For now, we're using a simulation for demonstration purposes
 
 export const generatePrompt = (formData: FormData): string => {
   return `
@@ -24,51 +19,83 @@ export const generatePrompt = (formData: FormData): string => {
     4. Category (Education, Health, Employment, Agriculture, etc.)
     5. Official website link
     
-    Format your response as structured JSON that can be easily parsed.
-  `;
-};
-
-export const callClaudeAPI = async (prompt: string) => {
-  // In a real implementation, this would make an API call to Claude
-  // For demonstration, we're returning mock data
-  
-  console.log('API call would be made with prompt:', prompt);
-  
-  // Simulate API latency
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // This is where you would implement the actual Claude API call
-  return {
-    success: true,
-    data: {
-      schemes: [
+    Format your response as structured JSON in this format:
+    {
+      "schemes": [
         {
-          id: '1',
-          name: 'PM Kisan Samman Nidhi',
-          description: 'Income support program that provides farmers with up to ₹6,000 per year as minimum income support.',
-          category: 'Agriculture',
-          eligibilityCriteria: ['Small and marginal farmers', 'Land ownership under 2 hectares'],
-          link: 'https://pmkisan.gov.in/'
-        },
-        {
-          id: '2',
-          name: 'Ayushman Bharat',
-          description: 'Health insurance scheme providing coverage up to ₹5 lakhs per family per year for secondary and tertiary care hospitalization.',
-          category: 'Health',
-          eligibilityCriteria: ['Income below poverty line', 'No existing health coverage'],
-          link: 'https://pmjay.gov.in/'
-        },
-        {
-          id: '3',
-          name: 'PM Awas Yojana',
-          description: 'Housing scheme aimed at providing housing for all in urban areas by 2022.',
-          category: 'Housing',
-          eligibilityCriteria: ['Urban resident', 'No existing property ownership'],
-          link: 'https://pmaymis.gov.in/'
+          "id": "unique-id",
+          "name": "Scheme Name",
+          "description": "Description of the scheme",
+          "category": "Category Name",
+          "eligibilityCriteria": ["Criterion 1", "Criterion 2"],
+          "link": "https://scheme-website.gov"
         }
       ]
     }
-  };
+  `;
+};
+
+export const callClaudeAPI = async (prompt: string, apiKey: string) => {
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 4000,
+        temperature: 0.5,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        system: "You are a government scheme eligibility expert. Return only valid JSON with schemes that match the criteria."
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API request failed: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Parse Claude's response to extract the JSON
+    let schemes = [];
+    try {
+      // Extract JSON from Claude's response, which is in the content of the first message
+      const content = data.content[0].text;
+      
+      // Try to extract JSON if it's within a code block
+      const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
+                         content.match(/```\n([\s\S]*?)\n```/) ||
+                         content.match(/{[\s\S]*?}/);
+                         
+      const jsonStr = jsonMatch ? jsonMatch[0].replace(/```json\n|```\n|```/g, '') : content;
+      const parsedData = JSON.parse(jsonStr);
+      
+      schemes = parsedData.schemes || [];
+    } catch (error) {
+      console.error('Error parsing Claude response:', error);
+      throw new Error('Failed to parse schemes from Claude response');
+    }
+
+    return {
+      success: true,
+      data: { schemes }
+    };
+  } catch (error) {
+    console.error('Error calling Claude API:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to get eligible schemes'
+    };
+  }
 };
 
 // Utility to create a PDF from results (to be implemented)
