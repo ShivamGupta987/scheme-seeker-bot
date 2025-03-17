@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { generatePrompt, callClaudeAPI } from '../utils/apiService';
+import { toast } from '../hooks/use-toast';
 
 export type FormData = {
   state: string;
@@ -108,16 +109,31 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           loading: false,
           error: null
         });
+        
+        setCurrentStep(6); // Automatically advance to results page
+        toast({
+          title: "Success!",
+          description: "Found eligible schemes based on your information.",
+          variant: "default",
+        });
       } else {
         throw new Error(response.error || 'Failed to fetch eligible schemes');
       }
     } catch (error) {
+      console.error('Error fetching results:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch eligible schemes. Please try again.",
+        variant: "destructive",
+      });
+      
       setResults(prev => ({
         ...prev,
         loading: false,
         error: error.message || 'Failed to fetch eligible schemes. Please try again.'
       }));
-      console.error('Error fetching results:', error);
     } finally {
       setIsSubmitting(false);
     }

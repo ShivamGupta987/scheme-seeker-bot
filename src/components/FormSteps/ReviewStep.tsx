@@ -4,13 +4,14 @@ import { Button } from '@/components/ui/button';
 import { useFormContext } from '../../context/FormContext';
 import { Separator } from '@/components/ui/separator';
 import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const ReviewStep: React.FC = () => {
   const { formData, setCurrentStep, fetchResults, isSubmitting } = useFormContext();
   
   const handleSubmit = async () => {
     await fetchResults();
-    setCurrentStep(6);
+    // No need to manually set current step - it's now handled in fetchResults
   };
   
   return (
@@ -48,6 +49,12 @@ const ReviewStep: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <Alert className="mt-4 bg-amber-50 border-amber-200">
+        <AlertDescription className="text-amber-800">
+          If online schemes aren't available, the app will show relevant sample schemes based on your profile.
+        </AlertDescription>
+      </Alert>
       
       <div className="text-center mt-4">
         <p className="text-sm text-muted-foreground">
