@@ -2,6 +2,13 @@
 import { FormData } from '../context/FormContext';
 import { supabase } from '../integrations/supabase/client';
 
+// Define a proper return type for the API service
+export type ApiResponse = {
+  success: boolean;
+  data?: { schemes: any[] };
+  error?: string;
+};
+
 export const generatePrompt = (formData: FormData): string => {
   return `
     System: You are a government scheme eligibility assistant. Your task is to identify eligible government schemes based on the following user information.
@@ -64,7 +71,7 @@ const fallbackSchemes = [
   }
 ];
 
-export const callClaudeAPI = async (prompt: string, apiKey: string) => {
+export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<ApiResponse> => {
   try {
     // If we're running in development or the browser environment
     // has CORS issues with direct API calls
@@ -133,10 +140,11 @@ export const callClaudeAPI = async (prompt: string, apiKey: string) => {
   } catch (error) {
     console.error('Error calling Claude API:', error);
     
-    // Return fallback data instead of failing
+    // Return fallback data with error information
     return {
-      success: true,
-      data: { schemes: generateDynamicFallbackSchemes(prompt) }
+      success: true, // Still returning success:true so UI shows fallback schemes
+      data: { schemes: generateDynamicFallbackSchemes(prompt) },
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 };
