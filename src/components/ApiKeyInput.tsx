@@ -16,8 +16,17 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onClose }) => {
   const [inputKey, setInputKey] = useState(claudeApiKey);
   const [isSaved, setIsSaved] = useState(false);
 
+  const defaultApiKey = "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";
+
   const handleSave = () => {
     setClaudeApiKey(inputKey);
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const useDefaultKey = () => {
+    setInputKey(defaultApiKey);
+    setClaudeApiKey(defaultApiKey);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -48,6 +57,14 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onClose }) => {
                 onChange={(e) => setInputKey(e.target.value)}
               />
             </div>
+            
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={useDefaultKey}
+            >
+              Use Preset API Key
+            </Button>
             
             <div className="flex items-start p-3 text-sm bg-amber-50 border border-amber-200 rounded-md">
               <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 mr-2 flex-shrink-0" />

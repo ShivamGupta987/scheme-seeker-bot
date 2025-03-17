@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Welcome, StateStep, GenderStep, IncomeStep, AgeStep, ReviewStep } from './FormSteps';
 import Results from './Results';
 import ProgressBar from './ProgressBar';
@@ -9,8 +9,15 @@ import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const ChatBot: React.FC = () => {
-  const { currentStep } = useFormContext();
+  const { currentStep, claudeApiKey } = useFormContext();
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  
+  // Show API key input automatically on first load if no valid key is set
+  useEffect(() => {
+    if (!claudeApiKey || claudeApiKey.trim() === '') {
+      setShowApiKeyInput(true);
+    }
+  }, []);
   
   const steps = [
     "Welcome",

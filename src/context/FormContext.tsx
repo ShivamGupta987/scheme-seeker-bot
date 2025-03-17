@@ -51,12 +51,16 @@ const defaultResults: Results = {
   error: null,
 };
 
-// Try to load API key from localStorage
+// Default Claude API key
+const DEFAULT_API_KEY = "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";
+
+// Try to load API key from localStorage or use the default
 const getSavedApiKey = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('claudeApiKey') || '';
+    const savedKey = localStorage.getItem('claudeApiKey');
+    return savedKey || DEFAULT_API_KEY;
   }
-  return '';
+  return DEFAULT_API_KEY;
 };
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
