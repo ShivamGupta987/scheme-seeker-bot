@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { generatePrompt, callClaudeAPI, ApiResponse } from '../utils/apiService';
 import { toast } from '../hooks/use-toast';
@@ -97,8 +98,12 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         throw new Error('Claude API key is required. Please add your API key in the settings.');
       }
       
+      console.log('Generating prompt with form data:', formData);
       const prompt = generatePrompt(formData);
+      console.log('Calling Claude API with key length:', claudeApiKey.length);
+      
       const response: ApiResponse = await callClaudeAPI(prompt, claudeApiKey);
+      console.log('Received API response:', response);
       
       if (response.success && response.data) {
         const usedFallback = !!response.error;
