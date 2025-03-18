@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { generatePrompt, callClaudeAPI, ApiResponse } from '../utils/apiService';
 import { toast } from '../hooks/use-toast';
