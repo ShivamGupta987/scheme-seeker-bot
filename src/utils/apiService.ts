@@ -1,4 +1,3 @@
-
 import { FormData } from '../context/FormContext';
 import { supabase } from '../integrations/supabase/client';
 
@@ -73,18 +72,9 @@ const fallbackSchemes = [
 
 export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<ApiResponse> => {
   try {
-    // Check if we should make a real API call or use fallback
-    // Only use fallback in development with CORS issues
-    const shouldUseFallback = window.location.hostname === 'localhost' || 
-                            window.location.hostname.includes('lovableproject.com');
-                            
-    if (shouldUseFallback) {
-      console.log('Using fallback data due to potential CORS issues in development environment');
-      console.log('In production, this would attempt to call the Claude API');
-    }
+    console.log('Calling Claude API with user data...');
     
-    // Always attempt to call the API first, regardless of environment
-    // This way, it will work in production
+    // Attempt to call the real Claude API - no fallback logic based on environment
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -93,7 +83,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-3-5-sonnet-20240620',
         max_tokens: 4000,
         temperature: 0.5,
         messages: [
@@ -112,6 +102,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
     }
 
     const data = await response.json();
+    console.log('Claude API response received:', data);
     
     // Parse Claude's response to extract the JSON
     let schemes = [];
@@ -128,6 +119,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
       const parsedData = JSON.parse(jsonStr);
       
       schemes = parsedData.schemes || [];
+      console.log('Successfully parsed schemes from Claude response:', schemes);
     } catch (error) {
       console.error('Error parsing Claude response:', error);
       throw new Error('Failed to parse schemes from Claude response');

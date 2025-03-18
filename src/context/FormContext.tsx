@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { generatePrompt, callClaudeAPI, ApiResponse } from '../utils/apiService';
 import { toast } from '../hooks/use-toast';
@@ -54,10 +53,8 @@ const defaultResults: Results = {
   usedFallback: false,
 };
 
-// Default Claude API key
-const DEFAULT_API_KEY = "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";
+const DEFAULT_API_KEY = "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";
 
-// Try to load API key from localStorage or use the default
 const getSavedApiKey = () => {
   if (typeof window !== 'undefined') {
     const savedKey = localStorage.getItem('claudeApiKey');
@@ -75,7 +72,6 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [claudeApiKey, setClaudeApiKey] = useState(getSavedApiKey);
 
-  // Save API key to localStorage when it changes
   React.useEffect(() => {
     if (claudeApiKey) {
       localStorage.setItem('claudeApiKey', claudeApiKey);
@@ -92,7 +88,6 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     setCurrentStep(0);
   };
 
-  // This function will call the Claude API
   const fetchResults = async () => {
     try {
       setIsSubmitting(true);
@@ -115,17 +110,15 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           usedFallback
         });
         
-        setCurrentStep(6); // Automatically advance to results page
+        setCurrentStep(6);
         
         if (usedFallback) {
-          // Show a warning toast for fallback data
           toast({
             title: "Notice",
             description: response.error || "Using sample schemes. Real-time data unavailable.",
-            variant: "warning",
+            variant: "destructive",
           });
         } else {
-          // Show success toast for real data
           toast({
             title: "Success!",
             description: "Found eligible schemes based on your information.",
@@ -138,7 +131,6 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     } catch (error) {
       console.error('Error fetching results:', error);
       
-      // Show error toast
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to fetch eligible schemes. Please try again.",
