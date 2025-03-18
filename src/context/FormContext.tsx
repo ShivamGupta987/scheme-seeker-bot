@@ -135,16 +135,22 @@ export const FormProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     } catch (error) {
       console.error('Error fetching results:', error);
       
+      let errorMessage = error instanceof Error ? error.message : "Failed to fetch eligible schemes. Please try again.";
+      
+      if (errorMessage.includes('CORS') || errorMessage.includes('NetworkError')) {
+        errorMessage = "Network error: Unable to connect to the scheme service. This may be due to CORS restrictions or network connectivity issues.";
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch eligible schemes. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       
       setResults(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch eligible schemes. Please try again.',
+        error: errorMessage,
         usedFallback: false
       }));
     } finally {
