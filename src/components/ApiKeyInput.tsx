@@ -17,7 +17,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onClose }) => {
   const [isSaved, setIsSaved] = useState(false);
 
   // Updated default API key to use the provided key
-  const defaultApiKey = "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";
+  const defaultApiKey = "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";
 
   const handleSave = () => {
     setClaudeApiKey(inputKey);

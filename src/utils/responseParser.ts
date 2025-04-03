@@ -1,5 +1,5 @@
 
-export const parseClaudeResponse = (content: string): any => {
+export const parseClauseResponse = (content: string): any => {
   try {
     // Try to extract JSON if it's within a code block
     const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 

@@ -1,5 +1,5 @@
 
-import { parseClaudeResponse } from './responseParser';
+import { parseClauseResponse } from './responseParser';
 import { generateDynamicFallbackSchemes } from './fallbackSchemes';
 import { ApiResponse } from './types';
 
@@ -51,7 +51,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
   try {
     console.log('Calling Claude API via proxy with user data...');
     
-    // Create the request data
+    // Create the request data - updated to use claude-3.5-sonnet-20240620 model
     const requestData = {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4000,
@@ -95,7 +95,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
         // Extract JSON from Claude's response, which is in the content of the first message
         const content = data.content[0].text;
         
-        const parsedData = parseClaudeResponse(content);
+        const parsedData = parseClauseResponse(content);
         
         schemes = parsedData.schemes || [];
         console.log('Successfully parsed schemes from Claude response:', schemes);
@@ -139,7 +139,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
             // Extract JSON from Claude's response, which is in the content of the first message
             const content = data.content[0].text;
             
-            const parsedData = parseClaudeResponse(content);
+            const parsedData = parseClauseResponse(content);
             
             schemes = parsedData.schemes || [];
             console.log('Successfully parsed schemes from Claude response:', schemes);
