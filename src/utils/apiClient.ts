@@ -51,7 +51,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
   try {
     console.log('Calling Claude API via proxy with user data...');
     
-    // Create the request data - updated to use claude-3.5-sonnet-20240620 model
+    // Create the request data using the latest Claude 3.5 model
     const requestData = {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4000,
@@ -62,7 +62,7 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
           content: prompt
         }
       ],
-      system: "You are a government scheme eligibility expert. Return only valid JSON with schemes that match the criteria."
+      system: "You are a government scheme eligibility expert. Return only valid JSON with schemes that match the criteria. Include detailed information about each scheme including eligibility, benefits, application process, and website links."
     };
     
     // Get URL options
@@ -71,6 +71,8 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
     
     // Try using the primary URL first
     try {
+      console.log('Sending request to Claude API with prompt:', prompt);
+      
       // Make the request to the proxy
       const response = await fetch(urlOptions.primary, {
         method: 'POST',

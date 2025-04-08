@@ -35,7 +35,7 @@ serve(async (req) => {
     
     console.log('Forwarding request to Anthropic API');
     
-    // Forward the request to Anthropic
+    // Forward the request to Anthropic with the correct anthropic-version header
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -50,6 +50,20 @@ serve(async (req) => {
     const responseData = await response.json();
     
     console.log('Received response from Anthropic API', response.status);
+    
+    if (!response.ok) {
+      console.error('Error response from Anthropic API:', responseData);
+      return new Response(
+        JSON.stringify({ 
+          error: responseData.error?.message || 'Error calling Anthropic API',
+          details: responseData
+        }),
+        {
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
     
     // Forward the response back to the client
     return new Response(
