@@ -14,6 +14,7 @@ interface ApiKeyInputProps {
 const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onClose }) => {
   const { claudeApiKey, setClaudeApiKey } = useFormContext();
   const [inputKey, setInputKey] = useState(claudeApiKey);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Updated default API key to use the provided key for Claude 3.5
   const defaultApiKey = "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";

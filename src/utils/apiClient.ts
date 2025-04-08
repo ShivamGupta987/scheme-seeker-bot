@@ -51,9 +51,9 @@ export const callClaudeAPI = async (prompt: string, apiKey: string): Promise<Api
   try {
     console.log('Calling Claude API via proxy with user data...');
     
-    // Create the request data using the latest Claude 3.5 model
+    // Create the request data using the specified Claude 3.5 model
     const requestData = {
-      model: 'claude-3-5-sonnet-20240620',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 4000,
       temperature: 0.5,
       messages: [
